@@ -1,22 +1,12 @@
-
 import React, { useMemo, useState } from "react";
 import { format, parseISO, startOfDay, subDays } from "date-fns";
 import { usePuppy } from "@/context/PuppyContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PuppyEvent } from "@/types";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import Layout from "@/components/Layout";
-import {
-  ResponsiveContainer,
-  BarChart,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  Bar
-} from "recharts";
+import { TimeframeSelector } from "@/components/statistics/TimeframeSelector";
+import { AveragesCard } from "@/components/statistics/AveragesCard";
+import { DailyEventsChart } from "@/components/statistics/DailyEventsChart";
+import { TimeDistributionChart } from "@/components/statistics/TimeDistributionChart";
 
 type TimeframeOption = "7days" | "30days" | "90days" | "custom";
 
@@ -155,61 +145,20 @@ const StatisticsPage: React.FC = () => {
           </div>
         </div>
         
-        <div className="mb-6">
-          <Tabs defaultValue="7days" onValueChange={(v: TimeframeOption) => setTimeframe(v)}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="7days">7 Tage</TabsTrigger>
-              <TabsTrigger value="30days">30 Tage</TabsTrigger>
-              <TabsTrigger value="90days">90 Tage</TabsTrigger>
-              <TabsTrigger value="custom">Benutzerdefiniert</TabsTrigger>
-            </TabsList>
-            
-            {timeframe === "custom" && (
-              <div className="flex gap-4 mt-4">
-                <div>
-                  <Label htmlFor="startDate">Von</Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    value={customStartDate}
-                    onChange={(e) => setCustomStartDate(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="endDate">Bis</Label>
-                  <Input
-                    id="endDate"
-                    type="date"
-                    value={customEndDate}
-                    onChange={(e) => setCustomEndDate(e.target.value)}
-                  />
-                </div>
-              </div>
-            )}
-          </Tabs>
-        </div>
+        <TimeframeSelector
+          timeframe={timeframe}
+          setTimeframe={setTimeframe}
+          customStartDate={customStartDate}
+          setCustomStartDate={setCustomStartDate}
+          customEndDate={customEndDate}
+          setCustomEndDate={setCustomEndDate}
+        />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Durchschnitt pro Tag</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-around">
-                <div className="text-center">
-                  <span className="text-3xl">💧</span>
-                  <p className="text-2xl font-bold mt-2">{averages.peePerDay}</p>
-                  <p className="text-sm text-gray-500">Urin</p>
-                </div>
-                
-                <div className="text-center">
-                  <span className="text-3xl">💩</span>
-                  <p className="text-2xl font-bold mt-2">{averages.poopPerDay}</p>
-                  <p className="text-sm text-gray-500">Kot</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <AveragesCard 
+            peePerDay={averages.peePerDay} 
+            poopPerDay={averages.poopPerDay} 
+          />
         </div>
         
         <Card className="mb-6">
@@ -217,18 +166,7 @@ const StatisticsPage: React.FC = () => {
             <CardTitle>Ereignisse im Zeitverlauf</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={eventsByDay}>
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="pee" name="Urin" fill="#D3E4FD" />
-                  <Bar dataKey="poop" name="Kot" fill="#E6D7B9" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <DailyEventsChart data={eventsByDay} />
           </CardContent>
         </Card>
         
@@ -237,18 +175,7 @@ const StatisticsPage: React.FC = () => {
             <CardTitle>Verteilung nach Tageszeit</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={timeDistribution}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="pee" name="Urin" fill="#D3E4FD" />
-                  <Bar dataKey="poop" name="Kot" fill="#E6D7B9" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <TimeDistributionChart data={timeDistribution} />
           </CardContent>
         </Card>
       </div>

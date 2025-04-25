@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Calendar, Plus, BarChart } from "lucide-react";
 import { usePuppy } from "@/context/PuppyContext";
+import { ThemeToggle } from "./ThemeToggle";
 import PuppyDiary from "./PuppyDiary";
 import NewPuppyDialog from "./NewPuppyDialog";
+import EditPuppyDialog from "./EditPuppyDialog";
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
@@ -17,11 +19,12 @@ const Sidebar: React.FC = () => {
   return (
     <>
       <aside className="w-64 border-r bg-sidebar fixed h-full">
-        <div className="p-5">
+        <div className="p-5 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <span className="text-2xl">🐶</span>
             <h1 className="text-xl font-bold">Puppy Tracker</h1>
           </div>
+          <ThemeToggle />
         </div>
 
         <nav className="mt-6">
@@ -61,16 +64,25 @@ const Sidebar: React.FC = () => {
             <h2 className="font-semibold mb-2">Welpen</h2>
             <ul className="space-y-1">
               {puppies.map((puppy) => (
-                <li key={puppy.id} className="flex items-center space-x-2 py-1">
+                <li key={puppy.id} className="flex items-center justify-between py-1">
                   <button
                     onClick={() => setSelectedPuppyId(puppy.id)}
-                    className="flex items-center space-x-2 w-full hover:bg-gray-100 p-2 rounded"
+                    className="flex items-center space-x-2 flex-1 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded"
                   >
                     <div className="w-8 h-8 bg-puppy-purple rounded-full flex items-center justify-center text-white">
-                      {puppy.name[0]}
+                      {puppy.image ? (
+                        <img
+                          src={puppy.image}
+                          alt={puppy.name}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        puppy.name[0]
+                      )}
                     </div>
                     <span>{puppy.name}</span>
                   </button>
+                  <EditPuppyDialog puppy={puppy} />
                 </li>
               ))}
               <li>
