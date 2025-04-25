@@ -1,9 +1,10 @@
 
-import React, { createContext, useState, useContext, useEffect } from "react";
-import { Puppy, PuppyEvent, EventType } from "../types";
+import React, { createContext, useContext, useEffect } from "react";
+import { Puppy, PuppyEvent } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Session } from "@supabase/supabase-js";
+import { useAuth } from "@/hooks/useAuth";
+import { usePuppyState } from "@/hooks/usePuppyState";
+import * as puppyService from "@/services/puppyService";
 
 interface PuppyContextType {
   puppies: Puppy[];
@@ -21,233 +22,126 @@ interface PuppyContextType {
 const PuppyContext = createContext<PuppyContextType | undefined>(undefined);
 
 export const PuppyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [puppies, setPuppies] = useState<Puppy[]>([]);
-  const [events, setEvents] = useState<PuppyEvent[]>([]);
-  const [selectedPuppyId, setSelectedPuppyId] = useState<string | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const { session } = useAuth();
   const { toast } = useToast();
+  const {
+    puppies,
+    events,
+    selectedPuppyId,
+    setSelectedPuppyId,
+    setPuppies,
+    setEvents,
+    fetchPuppyData,
+  } = usePuppyState();
 
-  // Handle auth changes
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Fetch puppies when session changes
   useEffect(() => {
     if (session) {
-      fetchPuppies();
-      fetchEvents();
-    } else {
-      setPuppies([]);
-      setEvents([]);
-      setSelectedPuppyId(null);
+      fetchPuppyData();
     }
-  }, [session]);
-
-  const fetchPuppies = async () => {
-    const { data, error } = await supabase
-      .from('puppies')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      toast({
-        title: "Fehler beim Laden der Welpen",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setPuppies(data);
-    if (data.length > 0 && !selectedPuppyId) {
-      setSelectedPuppyId(data[0].id);
-    }
-  };
-
-  const fetchEvents = async () => {
-    const { data, error } = await supabase
-      .from('events')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      toast({
-        title: "Fehler beim Laden der Ereignisse",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Ensure the event types match our EventType enum
-    const typedEvents = data.map(event => ({
-      ...event,
-      type: event.type as EventType
-    })) as PuppyEvent[];
-    
-    setEvents(typedEvents);
-  };
+  }, [session, fetchPuppyData]);
 
   const addPuppy = async (puppy: Omit<Puppy, "id" | "user_id" | "created_at" | "updated_at">) => {
-    if (!session?.user) {
+    try {
+      const newPuppy = await puppyService.createPuppy(puppy);
+      setPuppies([newPuppy, ...puppies]);
+      
       toast({
-        title: "Nicht eingeloggt",
-        description: "Sie müssen eingeloggt sein, um einen Welpen hinzuzufügen",
-        variant: "destructive",
+        title: "Welpe hinzugefügt",
+        description: `${puppy.name} wurde hinzugefügt!`,
       });
-      return;
-    }
-    
-    const { data, error } = await supabase
-      .from('puppies')
-      .insert([{
-        ...puppy,
-        user_id: session.user.id
-      }])
-      .select()
-      .single();
-
-    if (error) {
+    } catch (error) {
       toast({
         title: "Fehler beim Hinzufügen",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unbekannter Fehler",
         variant: "destructive",
       });
-      return;
     }
-
-    setPuppies([data, ...puppies]);
-    if (!selectedPuppyId) {
-      setSelectedPuppyId(data.id);
-    }
-
-    toast({
-      title: "Welpe hinzugefügt",
-      description: `${puppy.name} wurde hinzugefügt!`,
-    });
   };
 
   const updatePuppy = async (id: string, updatedFields: Partial<Puppy>) => {
-    const { data, error } = await supabase
-      .from('puppies')
-      .update(updatedFields)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
+    try {
+      const updatedPuppy = await puppyService.updatePuppy(id, updatedFields);
+      setPuppies(puppies.map(puppy => puppy.id === id ? updatedPuppy : puppy));
+      
+      toast({
+        title: "Welpe aktualisiert",
+        description: "Die Informationen wurden aktualisiert.",
+      });
+    } catch (error) {
       toast({
         title: "Fehler beim Aktualisieren",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unbekannter Fehler",
         variant: "destructive",
       });
-      return;
     }
-
-    setPuppies(puppies.map(puppy => puppy.id === id ? data : puppy));
-    toast({
-      title: "Welpe aktualisiert",
-      description: "Die Informationen wurden aktualisiert.",
-    });
   };
 
   const removePuppy = async (id: string) => {
-    const { error } = await supabase
-      .from('puppies')
-      .delete()
-      .eq('id', id);
+    try {
+      await puppyService.deletePuppy(id);
+      const removedPuppy = puppies.find(p => p.id === id);
+      setPuppies(puppies.filter(puppy => puppy.id !== id));
+      setEvents(events.filter(event => event.puppy_id !== id));
 
-    if (error) {
+      if (selectedPuppyId === id) {
+        const remainingPuppies = puppies.filter(p => p.id !== id);
+        setSelectedPuppyId(remainingPuppies.length > 0 ? remainingPuppies[0].id : null);
+      }
+
+      if (removedPuppy) {
+        toast({
+          title: "Welpe entfernt",
+          description: `${removedPuppy.name} wurde entfernt.`,
+        });
+      }
+    } catch (error) {
       toast({
         title: "Fehler beim Löschen",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unbekannter Fehler",
         variant: "destructive",
-      });
-      return;
-    }
-
-    const removedPuppy = puppies.find(p => p.id === id);
-    setPuppies(puppies.filter(puppy => puppy.id !== id));
-    setEvents(events.filter(event => event.puppy_id !== id));
-
-    if (selectedPuppyId === id) {
-      const remainingPuppies = puppies.filter(p => p.id !== id);
-      setSelectedPuppyId(remainingPuppies.length > 0 ? remainingPuppies[0].id : null);
-    }
-
-    if (removedPuppy) {
-      toast({
-        title: "Welpe entfernt",
-        description: `${removedPuppy.name} wurde entfernt.`,
       });
     }
   };
 
   const addEvent = async (event: Omit<PuppyEvent, "id" | "created_at">) => {
-    const { data, error } = await supabase
-      .from('events')
-      .insert([event])
-      .select()
-      .single();
+    try {
+      const newEvent = await puppyService.createEvent(event);
+      setEvents([newEvent, ...events]);
 
-    if (error) {
+      const eventPuppy = puppies.find(p => p.id === event.puppy_id);
+      const eventTypeText = 
+        event.type === "pee" ? "Urinieren" : 
+        event.type === "poop" ? "Stuhlgang" : 
+        "Beides";
+
+      toast({
+        title: "Ereignis hinzugefügt",
+        description: `${eventTypeText} für ${eventPuppy?.name || "Welpe"} wurde aufgezeichnet.`,
+      });
+    } catch (error) {
       toast({
         title: "Fehler beim Hinzufügen des Ereignisses",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unbekannter Fehler",
         variant: "destructive",
       });
-      return;
     }
-
-    // Cast the type to match our EventType
-    const typedEventData = {
-      ...data,
-      type: data.type as EventType
-    } as PuppyEvent;
-
-    setEvents([typedEventData, ...events]);
-
-    const eventPuppy = puppies.find(p => p.id === event.puppy_id);
-    const eventTypeText = 
-      event.type === "pee" ? "Urinieren" : 
-      event.type === "poop" ? "Stuhlgang" : 
-      "Beides";
-
-    toast({
-      title: "Ereignis hinzugefügt",
-      description: `${eventTypeText} für ${eventPuppy?.name || "Welpe"} wurde aufgezeichnet.`,
-    });
   };
 
   const removeEvent = async (id: string) => {
-    const { error } = await supabase
-      .from('events')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
+    try {
+      await puppyService.deleteEvent(id);
+      setEvents(events.filter(event => event.id !== id));
+      toast({
+        title: "Ereignis entfernt",
+        description: "Das Ereignis wurde gelöscht.",
+      });
+    } catch (error) {
       toast({
         title: "Fehler beim Löschen des Ereignisses",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unbekannter Fehler",
         variant: "destructive",
       });
-      return;
     }
-
-    setEvents(events.filter(event => event.id !== id));
-    toast({
-      title: "Ereignis entfernt",
-      description: "Das Ereignis wurde gelöscht.",
-    });
   };
 
   return (
