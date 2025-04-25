@@ -31,8 +31,8 @@ const PuppyDiary: React.FC<PuppyDiaryProps> = ({ puppyId, isOpen, onClose }) => 
   
   const puppy = puppies.find(p => p.id === puppyId);
   const puppyEvents = events
-    .filter(event => event.puppyId === puppyId)
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    .filter(event => event.puppy_id === puppyId)
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const getEventEmoji = (type: 'pee' | 'poop' | 'both') => {
     switch (type) {
@@ -71,20 +71,20 @@ const PuppyDiary: React.FC<PuppyDiaryProps> = ({ puppyId, isOpen, onClose }) => 
               {puppyEvents.map((event) => (
                 <TableRow key={event.id}>
                   <TableCell>
-                    {format(new Date(event.timestamp), "dd.MM.yyyy")}
+                    {format(new Date(event.created_at), "dd.MM.yyyy")}
                   </TableCell>
                   <TableCell>
-                    {format(new Date(event.timestamp), "HH:mm")}
+                    {format(new Date(event.created_at), "HH:mm")}
                   </TableCell>
                   <TableCell>
                     <span className="text-xl">{getEventEmoji(event.type)}</span>
                   </TableCell>
                   <TableCell>
-                    {event.imageUrl ? (
+                    {event.image_url ? (
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleImageClick(event.imageUrl!)}
+                        onClick={() => handleImageClick(event.image_url!)}
                       >
                         <Image className="h-5 w-5" />
                       </Button>

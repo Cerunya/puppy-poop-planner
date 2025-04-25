@@ -38,11 +38,10 @@ export const EventForm = ({ puppyId, type, onSuccess }: EventFormProps) => {
     }
     
     addEvent({
-      puppyId,
+      puppy_id: puppyId,
       type,
-      timestamp: new Date().toISOString(),
       notes: notes || undefined,
-      imageUrl: imageUrl || undefined,
+      image_url: imageUrl || undefined,
     });
     
     setNotes("");

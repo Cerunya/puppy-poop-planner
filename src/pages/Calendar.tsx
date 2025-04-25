@@ -24,7 +24,7 @@ const CalendarPage: React.FC = () => {
   const firstDayOfMonth = getDay(startOfMonth(currentMonth));
   
   const filteredEvents = selectedPuppyId 
-    ? events.filter(event => event.puppyId === selectedPuppyId)
+    ? events.filter(event => event.puppy_id === selectedPuppyId)
     : events;
   
   // Group events by day for easier lookup
@@ -32,7 +32,7 @@ const CalendarPage: React.FC = () => {
     const grouped: Record<string, PuppyEvent[]> = {};
     
     filteredEvents.forEach(event => {
-      const day = format(new Date(event.timestamp), "yyyy-MM-dd");
+      const day = format(new Date(event.created_at), "yyyy-MM-dd");
       if (!grouped[day]) {
         grouped[day] = [];
       }

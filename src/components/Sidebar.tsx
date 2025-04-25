@@ -84,9 +84,9 @@ const Sidebar: React.FC = () => {
                     className="flex items-center space-x-2 flex-1 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded"
                   >
                     <div className="w-8 h-8 bg-puppy-purple rounded-full flex items-center justify-center text-white">
-                      {puppy.image ? (
+                      {puppy.image_url ? (
                         <img
-                          src={puppy.image}
+                          src={puppy.image_url}
                           alt={puppy.name}
                           className="w-full h-full rounded-full object-cover"
                         />

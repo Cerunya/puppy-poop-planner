@@ -29,9 +29,8 @@ const Index = () => {
     if (!selectedPuppyId) return;
     
     addEvent({
-      puppyId: selectedPuppyId,
+      puppy_id: selectedPuppyId,
       type,
-      timestamp: new Date().toISOString(),
     });
   };
 
@@ -41,9 +40,8 @@ const Index = () => {
     if (!selectedPuppyId) return;
     
     addEvent({
-      puppyId: selectedPuppyId,
+      puppy_id: selectedPuppyId,
       type: eventType,
-      timestamp: date.toISOString(),
       notes: notes.trim() || undefined,
     });
     
@@ -59,11 +57,11 @@ const Index = () => {
   todayEnd.setHours(23, 59, 59, 999);
   
   const todayEvents = events.filter(event => {
-    const eventDate = new Date(event.timestamp);
+    const eventDate = new Date(event.created_at);
     return (
       eventDate >= todayStart && 
       eventDate <= todayEnd && 
-      (!selectedPuppyId || event.puppyId === selectedPuppyId)
+      (!selectedPuppyId || event.puppy_id === selectedPuppyId)
     );
   });
   
@@ -177,27 +175,6 @@ const Index = () => {
                     <SelectItem value="both">Beides</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="date">Datum und Uhrzeit</Label>
-                <div className="flex space-x-2">
-                  <div className="flex-grow">
-                    <Input
-                      type="datetime-local"
-                      id="date"
-                      value={format(date, "yyyy-MM-dd'T'HH:mm")}
-                      onChange={(e) => setDate(new Date(e.target.value))}
-                    />
-                  </div>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setDate(new Date())}
-                  >
-                    <CalendarIcon size={16} className="mr-1" /> Jetzt
-                  </Button>
-                </div>
               </div>
               
               <div className="space-y-2">

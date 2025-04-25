@@ -88,13 +88,31 @@ export const PuppyProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
 
-    setEvents(data);
+    // Ensure the event types match our EventType enum
+    const typedEvents = data.map(event => ({
+      ...event,
+      type: event.type as EventType
+    })) as PuppyEvent[];
+    
+    setEvents(typedEvents);
   };
 
   const addPuppy = async (puppy: Omit<Puppy, "id" | "user_id" | "created_at" | "updated_at">) => {
+    if (!session?.user) {
+      toast({
+        title: "Nicht eingeloggt",
+        description: "Sie müssen eingeloggt sein, um einen Welpen hinzuzufügen",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const { data, error } = await supabase
       .from('puppies')
-      .insert([puppy])
+      .insert([{
+        ...puppy,
+        user_id: session.user.id
+      }])
       .select()
       .single();
 
@@ -190,7 +208,13 @@ export const PuppyProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
 
-    setEvents([data, ...events]);
+    // Cast the type to match our EventType
+    const typedEventData = {
+      ...data,
+      type: data.type as EventType
+    } as PuppyEvent;
+
+    setEvents([typedEventData, ...events]);
 
     const eventPuppy = puppies.find(p => p.id === event.puppy_id);
     const eventTypeText = 

@@ -25,7 +25,7 @@ const EditPuppyDialog = ({ puppy, trigger }: EditPuppyDialogProps) => {
   const [breed, setBreed] = useState(puppy.breed);
   const [birthdate, setBirthdate] = useState(puppy.birthdate);
   const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(puppy.image || null);
+  const [imagePreview, setImagePreview] = useState<string | null>(puppy.image_url || null);
   const [open, setOpen] = useState(false);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,7 +39,7 @@ const EditPuppyDialog = ({ puppy, trigger }: EditPuppyDialogProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    let imageUrl = puppy.image;
+    let imageUrl = puppy.image_url;
     if (image) {
       // In a real app, you would upload the image to a server here
       // and get back a URL. For now, we'll use the object URL
@@ -50,7 +50,7 @@ const EditPuppyDialog = ({ puppy, trigger }: EditPuppyDialogProps) => {
       name,
       breed,
       birthdate,
-      image: imageUrl,
+      image_url: imageUrl,
     });
     
     setOpen(false);

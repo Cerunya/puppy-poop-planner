@@ -29,9 +29,9 @@ const StatisticsPage: React.FC = () => {
       startDate = startOfDay(new Date(customStartDate));
       const endDate = new Date(customEndDate);
       return events.filter(event => {
-        const eventDate = new Date(event.timestamp);
+        const eventDate = new Date(event.created_at);
         const isInTimeframe = eventDate >= startDate && eventDate <= endDate;
-        const isPuppyMatch = !selectedPuppyId || event.puppyId === selectedPuppyId;
+        const isPuppyMatch = !selectedPuppyId || event.puppy_id === selectedPuppyId;
         return isInTimeframe && isPuppyMatch;
       });
     }
@@ -45,9 +45,9 @@ const StatisticsPage: React.FC = () => {
     startDate = startOfDay(subDays(now, days));
     
     return events.filter(event => {
-      const eventDate = new Date(event.timestamp);
+      const eventDate = new Date(event.created_at);
       const isInTimeframe = eventDate >= startDate;
-      const isPuppyMatch = !selectedPuppyId || event.puppyId === selectedPuppyId;
+      const isPuppyMatch = !selectedPuppyId || event.puppy_id === selectedPuppyId;
       return isInTimeframe && isPuppyMatch;
     });
   }, [events, selectedPuppyId, timeframe, customStartDate, customEndDate]);
@@ -68,7 +68,7 @@ const StatisticsPage: React.FC = () => {
     }
     
     filteredEvents.forEach(event => {
-      const dateKey = format(parseISO(event.timestamp), "yyyy-MM-dd");
+      const dateKey = format(parseISO(event.created_at), "yyyy-MM-dd");
       if (grouped[dateKey]) {
         if (event.type === "pee" || event.type === "both") {
           grouped[dateKey].pee += 1;
@@ -107,7 +107,7 @@ const StatisticsPage: React.FC = () => {
     ];
     
     filteredEvents.forEach(event => {
-      const date = new Date(event.timestamp);
+      const date = new Date(event.created_at);
       const hour = date.getHours();
       
       let timeSlot: number;
