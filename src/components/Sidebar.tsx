@@ -1,24 +1,38 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, Plus, BarChart } from "lucide-react";
+import { Calendar, Plus, BarChart, LogOut } from "lucide-react";
 import { usePuppy } from "@/context/PuppyContext";
 import { ThemeToggle } from "./ThemeToggle";
 import PuppyDiary from "./PuppyDiary";
 import NewPuppyDialog from "./NewPuppyDialog";
 import EditPuppyDialog from "./EditPuppyDialog";
+import { Button } from "./ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const { puppies } = usePuppy();
   const [selectedPuppyId, setSelectedPuppyId] = useState<string | null>(null);
+  const { toast } = useToast();
+  const navigate = useNavigate();
   
   const isActive = (path: string) => {
-    return location.pathname === path ? "bg-puppy-purple/20 text-puppy-purple font-medium" : "hover:bg-gray-100";
+    return location.pathname === path ? "bg-puppy-purple/20 text-puppy-purple font-medium" : "hover:bg-gray-100 dark:hover:bg-gray-800";
+  };
+
+  const handleLogout = () => {
+    toast({
+      title: "Abgemeldet",
+      description: "Sie wurden erfolgreich abgemeldet.",
+    });
+    navigate("/");
   };
 
   return (
     <>
-      <aside className="w-64 border-r bg-sidebar fixed h-full">
+      <aside className="w-64 border-r bg-sidebar fixed h-full dark:bg-gray-900 dark:border-gray-800">
         <div className="p-5 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <span className="text-2xl">🐶</span>
@@ -31,8 +45,8 @@ const Sidebar: React.FC = () => {
           <ul>
             <li>
               <Link 
-                to="/" 
-                className={`flex items-center px-5 py-3 space-x-3 ${isActive('/')}`}
+                to="/dashboard" 
+                className={`flex items-center px-5 py-3 space-x-3 ${isActive('/dashboard')}`}
               >
                 <Plus size={20} />
                 <span>Neuer Eintrag</span>
@@ -60,7 +74,7 @@ const Sidebar: React.FC = () => {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-5">
-          <div className="border-t pt-4">
+          <div className="border-t pt-4 space-y-4">
             <h2 className="font-semibold mb-2">Welpen</h2>
             <ul className="space-y-1">
               {puppies.map((puppy) => (
@@ -89,6 +103,15 @@ const Sidebar: React.FC = () => {
                 <NewPuppyDialog />
               </li>
             </ul>
+            
+            <Button 
+              variant="outline" 
+              className="w-full flex items-center justify-center" 
+              onClick={handleLogout}
+            >
+              <LogOut size={16} className="mr-2" />
+              Abmelden
+            </Button>
           </div>
         </div>
       </aside>

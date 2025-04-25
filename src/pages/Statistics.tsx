@@ -1,17 +1,18 @@
+
 import React, { useMemo, useState } from "react";
 import { format, parseISO, startOfDay, subDays } from "date-fns";
 import { usePuppy } from "@/context/PuppyContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
 import { TimeframeSelector } from "@/components/statistics/TimeframeSelector";
 import { AveragesCard } from "@/components/statistics/AveragesCard";
-import { DailyEventsChart } from "@/components/statistics/DailyEventsChart";
-import { TimeDistributionChart } from "@/components/statistics/TimeDistributionChart";
+import { StatisticsHeader } from "@/components/statistics/StatisticsHeader";
+import { EventsSection } from "@/components/statistics/EventsSection";
 
 type TimeframeOption = "7days" | "30days" | "90days" | "custom";
 
 const StatisticsPage: React.FC = () => {
-  const { events, puppies, selectedPuppyId, setSelectedPuppyId } = usePuppy();
+  const { events, selectedPuppyId, setSelectedPuppyId } = usePuppy();
   const [timeframe, setTimeframe] = useState<TimeframeOption>("7days");
   const [customStartDate, setCustomStartDate] = useState(
     format(subDays(new Date(), 7), "yyyy-MM-dd")
@@ -52,9 +53,9 @@ const StatisticsPage: React.FC = () => {
   }, [events, selectedPuppyId, timeframe, customStartDate, customEndDate]);
   
   const eventsByDay = useMemo(() => {
-    const grouped: Record<string, { date: string, pee: number, poop: number }> = {};
+    const grouped: Record<string, { date: string; pee: number; poop: number; }> = {};
     const now = new Date();
-    const days = timeframe === "7days" ? 7 : 30;
+    const days = timeframe === "7days" ? 7 : timeframe === "30days" ? 30 : 90;
     
     for (let i = 0; i < days; i++) {
       const date = subDays(now, i);
@@ -84,7 +85,10 @@ const StatisticsPage: React.FC = () => {
   }, [filteredEvents, timeframe]);
   
   const averages = useMemo(() => {
-    const totalDays = timeframe === "7days" ? 7 : 30;
+    const totalDays = timeframe === "custom" 
+      ? Math.ceil((new Date(customEndDate).getTime() - new Date(customStartDate).getTime()) / (1000 * 60 * 60 * 24))
+      : timeframe === "7days" ? 7 : timeframe === "30days" ? 30 : 90;
+    
     const totalPee = filteredEvents.filter(e => e.type === "pee" || e.type === "both").length;
     const totalPoop = filteredEvents.filter(e => e.type === "poop" || e.type === "both").length;
     
@@ -92,7 +96,7 @@ const StatisticsPage: React.FC = () => {
       peePerDay: (totalPee / totalDays).toFixed(1),
       poopPerDay: (totalPoop / totalDays).toFixed(1)
     };
-  }, [filteredEvents, timeframe]);
+  }, [filteredEvents, timeframe, customStartDate, customEndDate]);
   
   const timeDistribution = useMemo(() => {
     const distribution = [
@@ -126,24 +130,10 @@ const StatisticsPage: React.FC = () => {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Statistiken</h1>
-          
-          <div className="flex space-x-2">
-            <select 
-              className="border rounded px-2 py-1 text-sm" 
-              value={selectedPuppyId || ""}
-              onChange={(e) => setSelectedPuppyId(e.target.value || null)}
-            >
-              <option value="">Alle Welpen</option>
-              {puppies.map((puppy) => (
-                <option key={puppy.id} value={puppy.id}>
-                  {puppy.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <StatisticsHeader 
+          selectedPuppyId={selectedPuppyId} 
+          setSelectedPuppyId={setSelectedPuppyId} 
+        />
         
         <TimeframeSelector
           timeframe={timeframe}
@@ -161,23 +151,10 @@ const StatisticsPage: React.FC = () => {
           />
         </div>
         
-        <Card className="mb-6">
-          <CardHeader className="pb-2">
-            <CardTitle>Ereignisse im Zeitverlauf</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DailyEventsChart data={eventsByDay} />
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Verteilung nach Tageszeit</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TimeDistributionChart data={timeDistribution} />
-          </CardContent>
-        </Card>
+        <EventsSection 
+          eventsByDay={eventsByDay} 
+          timeDistribution={timeDistribution}
+        />
       </div>
     </Layout>
   );
