@@ -15,4 +15,5 @@ export interface PuppyEvent {
   type: EventType;
   timestamp: string;
   notes?: string;
+  imageUrl?: string;
 }

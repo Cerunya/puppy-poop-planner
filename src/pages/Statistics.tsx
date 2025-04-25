@@ -1,38 +1,59 @@
-
 import React, { useMemo, useState } from "react";
-import { format, parseISO, startOfDay, subDays, differenceInDays } from "date-fns";
-import { de } from "date-fns/locale";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import Layout from "@/components/Layout";
+import { format, parseISO, startOfDay, subDays } from "date-fns";
 import { usePuppy } from "@/context/PuppyContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PuppyEvent } from "@/types";
+import { Label, Input } from "@/components/ui/input";
+
+type TimeframeOption = "7days" | "30days" | "90days" | "custom";
 
 const StatisticsPage: React.FC = () => {
   const { events, puppies, selectedPuppyId, setSelectedPuppyId } = usePuppy();
-  const [timeframe, setTimeframe] = useState<"7days" | "30days">("7days");
+  const [timeframe, setTimeframe] = useState<TimeframeOption>("7days");
+  const [customStartDate, setCustomStartDate] = useState(
+    format(subDays(new Date(), 7), "yyyy-MM-dd")
+  );
+  const [customEndDate, setCustomEndDate] = useState(
+    format(new Date(), "yyyy-MM-dd")
+  );
   
   const filteredEvents = useMemo(() => {
     const now = new Date();
-    const startDate = startOfDay(subDays(now, timeframe === "7days" ? 7 : 30));
+    let startDate: Date;
+    
+    if (timeframe === "custom") {
+      startDate = startOfDay(new Date(customStartDate));
+      const endDate = new Date(customEndDate);
+      return events.filter(event => {
+        const eventDate = new Date(event.timestamp);
+        const isInTimeframe = eventDate >= startDate && eventDate <= endDate;
+        const isPuppyMatch = !selectedPuppyId || event.puppyId === selectedPuppyId;
+        return isInTimeframe && isPuppyMatch;
+      });
+    }
+    
+    const days = {
+      "7days": 7,
+      "30days": 30,
+      "90days": 90,
+    }[timeframe] || 7;
+    
+    startDate = startOfDay(subDays(now, days));
     
     return events.filter(event => {
       const eventDate = new Date(event.timestamp);
       const isInTimeframe = eventDate >= startDate;
       const isPuppyMatch = !selectedPuppyId || event.puppyId === selectedPuppyId;
-      
       return isInTimeframe && isPuppyMatch;
     });
-  }, [events, selectedPuppyId, timeframe]);
+  }, [events, selectedPuppyId, timeframe, customStartDate, customEndDate]);
   
-  // Group events by day
   const eventsByDay = useMemo(() => {
     const grouped: Record<string, { date: string, pee: number, poop: number }> = {};
     const now = new Date();
     const days = timeframe === "7days" ? 7 : 30;
     
-    // Initialize all days
     for (let i = 0; i < days; i++) {
       const date = subDays(now, i);
       const dateKey = format(date, "yyyy-MM-dd");
@@ -43,7 +64,6 @@ const StatisticsPage: React.FC = () => {
       };
     }
     
-    // Count events
     filteredEvents.forEach(event => {
       const dateKey = format(parseISO(event.timestamp), "yyyy-MM-dd");
       if (grouped[dateKey]) {
@@ -56,13 +76,11 @@ const StatisticsPage: React.FC = () => {
       }
     });
     
-    // Sort by date ascending
     return Object.values(grouped).sort((a, b) => {
       return a.date.localeCompare(b.date);
     });
   }, [filteredEvents, timeframe]);
   
-  // Calculate averages
   const averages = useMemo(() => {
     const totalDays = timeframe === "7days" ? 7 : 30;
     const totalPee = filteredEvents.filter(e => e.type === "pee" || e.type === "both").length;
@@ -74,7 +92,6 @@ const StatisticsPage: React.FC = () => {
     };
   }, [filteredEvents, timeframe]);
   
-  // Calculate distribution by time of day
   const timeDistribution = useMemo(() => {
     const distribution = [
       { name: "Morgens (6-12)", pee: 0, poop: 0 },
@@ -127,11 +144,36 @@ const StatisticsPage: React.FC = () => {
         </div>
         
         <div className="mb-6">
-          <Tabs defaultValue="7days" onValueChange={(v: "7days" | "30days") => setTimeframe(v)}>
+          <Tabs defaultValue="7days" onValueChange={(v: TimeframeOption) => setTimeframe(v)}>
             <TabsList className="mb-4">
               <TabsTrigger value="7days">7 Tage</TabsTrigger>
               <TabsTrigger value="30days">30 Tage</TabsTrigger>
+              <TabsTrigger value="90days">90 Tage</TabsTrigger>
+              <TabsTrigger value="custom">Benutzerdefiniert</TabsTrigger>
             </TabsList>
+            
+            {timeframe === "custom" && (
+              <div className="flex gap-4 mt-4">
+                <div>
+                  <Label htmlFor="startDate">Von</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="endDate">Bis</Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
           </Tabs>
         </div>
         

@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Calendar, Plus, BarChart } from "lucide-react";
 import { usePuppy } from "@/context/PuppyContext";
 import PuppyDiary from "./PuppyDiary";
+import NewPuppyDialog from "./NewPuppyDialog";
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
@@ -73,10 +74,7 @@ const Sidebar: React.FC = () => {
                 </li>
               ))}
               <li>
-                <button className="w-full flex items-center space-x-2 py-1 text-gray-500 hover:text-gray-700">
-                  <Plus size={16} />
-                  <span>Neuen Welpen</span>
-                </button>
+                <NewPuppyDialog />
               </li>
             </ul>
           </div>

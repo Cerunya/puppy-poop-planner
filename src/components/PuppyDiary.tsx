@@ -1,7 +1,7 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { format } from "date-fns";
-import { de } from "date-fns/locale";
+import { Image } from "lucide-react";
 import { usePuppy } from "@/context/PuppyContext";
 import {
   Sheet,
@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 
 interface PuppyDiaryProps {
   puppyId: string | null;
@@ -44,6 +45,10 @@ const PuppyDiary: React.FC<PuppyDiaryProps> = ({ puppyId, isOpen, onClose }) => 
     }
   };
 
+  const handleImageClick = (imageUrl: string) => {
+    window.open(imageUrl, '_blank');
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-[90%] sm:w-[540px]">
@@ -58,6 +63,7 @@ const PuppyDiary: React.FC<PuppyDiaryProps> = ({ puppyId, isOpen, onClose }) => 
                 <TableHead>Datum</TableHead>
                 <TableHead>Zeit</TableHead>
                 <TableHead>Art</TableHead>
+                <TableHead>Foto</TableHead>
                 <TableHead>Notizen</TableHead>
               </TableRow>
             </TableHeader>
@@ -72,6 +78,19 @@ const PuppyDiary: React.FC<PuppyDiaryProps> = ({ puppyId, isOpen, onClose }) => 
                   </TableCell>
                   <TableCell>
                     <span className="text-xl">{getEventEmoji(event.type)}</span>
+                  </TableCell>
+                  <TableCell>
+                    {event.imageUrl ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleImageClick(event.imageUrl!)}
+                      >
+                        <Image className="h-5 w-5" />
+                      </Button>
+                    ) : (
+                      "-"
+                    )}
                   </TableCell>
                   <TableCell>{event.notes || "-"}</TableCell>
                 </TableRow>
