@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { usePuppy } from "@/context/PuppyContext";
+import { Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
