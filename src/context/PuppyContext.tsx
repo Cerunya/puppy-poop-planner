@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { Puppy, PuppyEvent } from "../types";
+import { Puppy, PuppyEvent, EventType } from "../types";
 import { useToast } from "@/hooks/use-toast";
 
 interface PuppyContextType {
