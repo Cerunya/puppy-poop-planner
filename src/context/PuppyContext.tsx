@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { usePuppyState } from "@/hooks/usePuppyState";
 import * as puppyService from "@/services/puppyService";
+import { Session } from '@supabase/supabase-js'; // Added this import for Session type
 
 interface PuppyContextType {
   puppies: Puppy[];

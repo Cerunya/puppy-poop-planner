@@ -26,12 +26,14 @@ export const fetchEvents = async () => {
 };
 
 export const createPuppy = async (puppy: Omit<Puppy, "id" | "user_id" | "created_at" | "updated_at">) => {
-  const { data: session } = await supabase.auth.getSession();
-  if (!session?.user) throw new Error("Not authenticated");
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData.session?.user?.id;
+  
+  if (!userId) throw new Error("Not authenticated");
 
   const { data, error } = await supabase
     .from('puppies')
-    .insert([{ ...puppy, user_id: session.user.id }])
+    .insert([{ ...puppy, user_id: userId }])
     .select()
     .single();
 
