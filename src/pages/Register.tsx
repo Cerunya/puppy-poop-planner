@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -31,20 +32,32 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      // For demo purposes, we're just simulating a registration
-      // In a real app, this would connect to a backend
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Registrierung erfolgreich",
-        description: "Sie können sich jetzt einloggen.",
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
       });
-      
-      navigate("/login");
+
+      if (error) throw error;
+
+      if (data.user) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) throw signInError;
+
+        toast({
+          title: "Registrierung erfolgreich",
+          description: "Willkommen bei Puppy Tracker!",
+        });
+        
+        navigate("/dashboard");
+      }
     } catch (error) {
       toast({
         title: "Registrierung fehlgeschlagen",
-        description: "Bitte versuchen Sie es erneut.",
+        description: error instanceof Error ? error.message : "Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     } finally {
@@ -53,8 +66,8 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="py-4 px-6 flex justify-between items-center border-b">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-purple-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <header className="py-4 px-6 flex justify-between items-center border-b backdrop-blur-md bg-white/30 dark:bg-gray-900/30">
         <Link to="/" className="flex items-center space-x-2">
           <span className="text-2xl">🐶</span>
           <h1 className="text-xl font-bold">Puppy Tracker</h1>
@@ -63,9 +76,12 @@ const Register = () => {
       </header>
       
       <main className="flex-1 flex items-center justify-center p-6">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-center">Registrierung</CardTitle>
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl text-center">Registrierung</CardTitle>
+            <p className="text-center text-muted-foreground">
+              Erstellen Sie ein Konto, um Ihren Welpen zu tracken
+            </p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -78,6 +94,7 @@ const Register = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="border-gray-200"
                 />
               </div>
               <div className="space-y-2">
@@ -88,6 +105,7 @@ const Register = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="border-gray-200"
                 />
               </div>
               <div className="space-y-2">
@@ -98,6 +116,7 @@ const Register = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  className="border-gray-200"
                 />
               </div>
               
@@ -107,7 +126,7 @@ const Register = () => {
               
               <div className="text-center text-sm">
                 Bereits registriert?{" "}
-                <Link to="/login" className="text-blue-600 hover:underline">
+                <Link to="/login" className="text-primary hover:underline font-medium">
                   Login
                 </Link>
               </div>
