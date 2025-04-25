@@ -1,10 +1,17 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { usePuppy } from "@/context/PuppyContext";
 
 const Landing = () => {
+  const { session } = usePuppy();
+
+  if (session) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="py-4 px-6 flex justify-between items-center border-b">
