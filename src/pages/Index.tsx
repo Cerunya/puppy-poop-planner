@@ -17,16 +17,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { EventType } from "@/types";
-import { Calendar as CalendarIcon, CalendarPlus, CalendarMinus } from "lucide-react";
+import { Calendar as CalendarIcon, CalendarPlus, CalendarMinus, Image } from "lucide-react";
 
 const Index = () => {
   const { puppies, events, addEvent, selectedPuppyId, setSelectedPuppyId } = usePuppy();
   const [eventType, setEventType] = useState<EventType>("pee");
   const [notes, setNotes] = useState("");
   const [date, setDate] = useState<Date>(new Date());
+  const [poopDescription, setPoopDescription] = useState<string>("");
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleQuickAdd = (type: EventType) => {
-    if (!selectedPuppyId) return;
+    if (!selectedPuppyId) {
+      return;
+    }
     
     addEvent({
       puppy_id: selectedPuppyId,
@@ -34,19 +39,43 @@ const Index = () => {
     });
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedPuppyId) return;
     
+    // Create a new event
+    let imageUrl: string | undefined = undefined;
+    if (imagePreview) {
+      imageUrl = imagePreview;
+    }
+
+    // Combine notes and poop description if available
+    let combinedNotes = notes;
+    if (poopDescription && (eventType === "poop" || eventType === "both")) {
+      combinedNotes = `${poopDescription}${notes ? ': ' + notes : ''}`;
+    }
+    
     addEvent({
       puppy_id: selectedPuppyId,
       type: eventType,
-      notes: notes.trim() || undefined,
+      notes: combinedNotes.trim() || undefined,
+      image_url: imageUrl,
     });
     
     // Reset form
     setNotes("");
+    setPoopDescription("");
+    setImage(null);
+    setImagePreview(null);
   };
 
   // Get today's events for the selected puppy
@@ -68,6 +97,17 @@ const Index = () => {
   const peeCount = todayEvents.filter(event => event.type === "pee" || event.type === "both").length;
   const poopCount = todayEvents.filter(event => event.type === "poop" || event.type === "both").length;
 
+  const poopDescriptions = [
+    "Normal fest",
+    "Weich",
+    "Wässrig",
+    "Hart",
+    "Mit Schleim",
+    "Mit Blut",
+    "Dunkel gefärbt",
+    "Hell gefärbt"
+  ];
+
   return (
     <Layout>
       <div className="max-w-3xl mx-auto">
@@ -79,8 +119,9 @@ const Index = () => {
             <CardContent className="p-6 flex flex-col items-center justify-center">
               <button 
                 onClick={() => handleQuickAdd("pee")}
-                className="text-5xl event-button"
+                className="text-5xl event-button hover:scale-110 transition-transform"
                 aria-label="Jetzt hat er gepullert"
+                type="button"
               >
                 💧
               </button>
@@ -92,8 +133,9 @@ const Index = () => {
             <CardContent className="p-6 flex flex-col items-center justify-center">
               <button 
                 onClick={() => handleQuickAdd("poop")}
-                className="text-5xl event-button"
+                className="text-5xl event-button hover:scale-110 transition-transform"
                 aria-label="Jetzt hat er gekackt"
+                type="button"
               >
                 💩
               </button>
@@ -105,8 +147,9 @@ const Index = () => {
             <CardContent className="p-6 flex flex-col items-center justify-center">
               <button 
                 onClick={() => handleQuickAdd("both")}
-                className="text-5xl event-button"
+                className="text-5xl event-button hover:scale-110 transition-transform"
                 aria-label="Jetzt hat er beides gemacht"
+                type="button"
               >
                 💧💩
               </button>
@@ -175,6 +218,71 @@ const Index = () => {
                     <SelectItem value="both">Beides</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {(eventType === "poop" || eventType === "both") && (
+                <div className="space-y-2">
+                  <Label htmlFor="poopDescription">Kot-Beschreibung</Label>
+                  <Select
+                    value={poopDescription}
+                    onValueChange={setPoopDescription}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Beschreibung auswählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {poopDescriptions.map((desc) => (
+                        <SelectItem key={desc} value={desc}>
+                          {desc}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="image">Foto</Label>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("imageUpload")?.click()}
+                    className="flex items-center gap-2"
+                  >
+                    <Image className="w-4 h-4" />
+                    Foto hochladen
+                  </Button>
+                  <Input
+                    id="imageUpload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageChange}
+                  />
+                  
+                  {imagePreview && (
+                    <div className="mt-2">
+                      <img
+                        src={imagePreview}
+                        alt="Vorschau"
+                        className="max-w-xs rounded-md"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="mt-2 text-red-500"
+                        onClick={() => {
+                          setImage(null);
+                          setImagePreview(null);
+                        }}
+                      >
+                        Entfernen
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
               
               <div className="space-y-2">
