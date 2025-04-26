@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { usePuppy } from "@/context/PuppyContext";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -17,14 +15,6 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { session } = usePuppy();
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (session) {
-      navigate("/dashboard");
-    }
-  }, [session, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,23 +31,22 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      // Step 1: Sign up user
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      // Sign up user
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
 
-      if (signUpError) throw signUpError;
-
-      // Successfully registered
-      toast({
-        title: "Registrierung erfolgreich",
-        description: "Willkommen bei Puppy Tracker!",
-      });
+      if (error) throw error;
       
-      // If auto-confirm is enabled, the user should be logged in now
-      // We'll check if we have a session after signup
-      if (signUpData.session) {
+      // If we have a session after signup, automatically log the user in
+      if (data.session) {
+        toast({
+          title: "Registrierung erfolgreich",
+          description: "Willkommen bei Puppy Tracker!",
+        });
+        
+        // Navigate to dashboard after successful registration
         navigate("/dashboard");
       } else {
         // If email confirmation is required, inform the user
@@ -65,6 +54,8 @@ const Register = () => {
           title: "Bestätigungsmail gesendet",
           description: "Bitte bestätige deine E-Mail-Adresse, um fortzufahren.",
         });
+        // Redirect to login page
+        navigate("/login");
       }
     } catch (error) {
       toast({

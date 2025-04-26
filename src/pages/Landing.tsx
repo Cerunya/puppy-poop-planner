@@ -1,11 +1,12 @@
+
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { usePuppy } from "@/context/PuppyContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const Landing = () => {
-  const { session, loading } = usePuppy();
+  const { session, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
