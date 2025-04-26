@@ -51,52 +51,56 @@ const PuppyDiary: React.FC<PuppyDiaryProps> = ({ puppyId, isOpen, onClose }) => 
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-[90%] sm:w-[540px]">
+      <SheetContent className="w-[95%] sm:w-[600px] md:w-[700px] lg:max-w-[800px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>{puppy?.name}s Tagebuch</SheetTitle>
+          <SheetTitle className="text-xl">{puppy?.name}s Tagebuch</SheetTitle>
         </SheetHeader>
         
         <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Datum</TableHead>
-                <TableHead>Zeit</TableHead>
-                <TableHead>Art</TableHead>
-                <TableHead>Foto</TableHead>
-                <TableHead>Notizen</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {puppyEvents.map((event) => (
-                <TableRow key={event.id}>
-                  <TableCell>
-                    {format(new Date(event.created_at), "dd.MM.yyyy")}
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(event.created_at), "HH:mm")}
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-xl">{getEventEmoji(event.type)}</span>
-                  </TableCell>
-                  <TableCell>
-                    {event.image_url ? (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleImageClick(event.image_url!)}
-                      >
-                        <Image className="h-5 w-5" />
-                      </Button>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell>{event.notes || "-"}</TableCell>
+          <div className="w-full overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="whitespace-nowrap">Datum</TableHead>
+                  <TableHead className="whitespace-nowrap">Zeit</TableHead>
+                  <TableHead className="whitespace-nowrap">Art</TableHead>
+                  <TableHead className="whitespace-nowrap">Foto</TableHead>
+                  <TableHead className="whitespace-nowrap">Notizen</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {puppyEvents.map((event) => (
+                  <TableRow key={event.id}>
+                    <TableCell className="whitespace-nowrap">
+                      {format(new Date(event.created_at), "dd.MM.yyyy")}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {format(new Date(event.created_at), "HH:mm")}
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-xl">{getEventEmoji(event.type)}</span>
+                    </TableCell>
+                    <TableCell>
+                      {event.image_url ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleImageClick(event.image_url!)}
+                        >
+                          <Image className="h-5 w-5" />
+                        </Button>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    <TableCell className="max-w-[200px] break-words">
+                      {event.notes || "-"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </ScrollArea>
       </SheetContent>
     </Sheet>
