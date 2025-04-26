@@ -27,6 +27,18 @@ const Login = () => {
     try {
       console.log("Attempting login with:", { email });
       
+      // Check if the user exists first
+      const { data: userExists, error: userCheckError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+        
+      if (userCheckError) {
+        console.warn("Error checking if user exists:", userCheckError);
+      }
+      
+      // Perform sign in
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -34,7 +46,13 @@ const Login = () => {
       
       if (error) {
         console.error("Login error:", error);
-        setErrorMessage(error.message);
+        
+        // Handle specific error cases
+        if (error.message.includes("Invalid login credentials")) {
+          setErrorMessage("E-Mail oder Passwort ist ungültig. Bitte überprüfen Sie Ihre Eingaben.");
+        } else {
+          setErrorMessage(error.message);
+        }
         throw error;
       }
       
@@ -49,11 +67,15 @@ const Login = () => {
       navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
-      toast({
-        title: "Login fehlgeschlagen",
-        description: error instanceof Error ? error.message : "Bitte überprüfen Sie Ihre Anmeldedaten und versuchen Sie es erneut.",
-        variant: "destructive",
-      });
+      
+      // Only show toast if we don't already have an error message set
+      if (!errorMessage) {
+        toast({
+          title: "Login fehlgeschlagen",
+          description: error instanceof Error ? error.message : "Bitte überprüfen Sie Ihre Anmeldedaten und versuchen Sie es erneut.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
