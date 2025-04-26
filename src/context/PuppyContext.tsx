@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect } from "react";
 import { Puppy, PuppyEvent } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -13,7 +12,7 @@ interface PuppyContextType {
   addPuppy: (puppy: Omit<Puppy, "id" | "user_id" | "created_at" | "updated_at">) => Promise<void>;
   updatePuppy: (id: string, puppy: Partial<Puppy>) => Promise<void>;
   removePuppy: (id: string) => Promise<void>;
-  addEvent: (event: Omit<PuppyEvent, "id" | "created_at">) => Promise<void>;
+  addEvent: (event: Omit<PuppyEvent, "id">) => Promise<void>;
   removeEvent: (id: string) => Promise<void>;
   selectedPuppyId: string | null;
   setSelectedPuppyId: (id: string | null) => void;
@@ -105,7 +104,7 @@ export const PuppyProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const addEvent = async (event: Omit<PuppyEvent, "id" | "created_at">) => {
+  const addEvent = async (event: Omit<PuppyEvent, "id">) => {
     try {
       const newEvent = await puppyService.createEvent(event);
       setEvents([newEvent, ...events]);
