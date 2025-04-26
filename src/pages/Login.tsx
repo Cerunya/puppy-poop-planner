@@ -27,12 +27,12 @@ const Login = () => {
     try {
       console.log("Attempting login with:", { email });
       
-      // Check if the user exists first
-      const { data: userExists, error: userCheckError } = await supabase
+      // Check if the user exists first, using a more specific type
+      const { error: userCheckError } = await supabase
         .from('profiles')
         .select('id')
         .eq('email', email)
-        .maybeSingle();
+        .limit(1);
         
       if (userCheckError) {
         console.warn("Error checking if user exists:", userCheckError);
