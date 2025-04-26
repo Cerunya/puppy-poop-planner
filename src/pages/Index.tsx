@@ -36,6 +36,7 @@ const Index = () => {
     addEvent({
       puppy_id: selectedPuppyId,
       type,
+      created_at: new Date().toISOString(),
     });
   };
 
@@ -69,6 +70,7 @@ const Index = () => {
       type: eventType,
       notes: combinedNotes.trim() || undefined,
       image_url: imageUrl,
+      created_at: new Date().toISOString(),
     });
     
     // Reset form
