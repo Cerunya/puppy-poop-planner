@@ -6,6 +6,7 @@ import { Image, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EventType } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EventFormProps {
   puppyId: string;
@@ -18,6 +19,10 @@ export const EventForm = ({ puppyId, type, onSuccess }: EventFormProps) => {
   const [notes, setNotes] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string>(() => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -27,21 +32,52 @@ export const EventForm = ({ puppyId, type, onSuccess }: EventFormProps) => {
     }
   };
 
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError, data } = await supabase.storage
+      .from('puppy-events')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error('Error uploading file:', uploadError);
+      return null;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('puppy-events')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     let imageUrl = null;
     if (image) {
-      // In a real app, you would upload the image to a server here
-      // and get back a URL. For now, we'll use the object URL
-      imageUrl = URL.createObjectURL(image);
+      imageUrl = await uploadImage(image);
     }
+
+    // Create event with custom time
+    const now = new Date();
+    const [hours, minutes] = selectedTime.split(':').map(Number);
+    const eventTime = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      hours,
+      minutes
+    );
     
-    addEvent({
+    await addEvent({
       puppy_id: puppyId,
       type,
       notes: notes || undefined,
       image_url: imageUrl || undefined,
+      created_at: eventTime.toISOString(),
     });
     
     setNotes("");
@@ -52,6 +88,16 @@ export const EventForm = ({ puppyId, type, onSuccess }: EventFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="time">Uhrzeit</Label>
+        <Input
+          type="time"
+          id="time"
+          value={selectedTime}
+          onChange={(e) => setSelectedTime(e.target.value)}
+        />
+      </div>
+      
       <div>
         <Label htmlFor="notes">Notizen</Label>
         <Input
@@ -89,6 +135,18 @@ export const EventForm = ({ puppyId, type, onSuccess }: EventFormProps) => {
               alt="Preview"
               className="max-w-[200px] rounded-md"
             />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="mt-2 text-red-500"
+              onClick={() => {
+                setImage(null);
+                setImagePreview(null);
+              }}
+            >
+              Entfernen
+            </Button>
           </div>
         )}
       </div>

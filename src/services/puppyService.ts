@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Puppy, PuppyEvent, EventType } from "@/types";
 
@@ -65,7 +64,7 @@ export const deletePuppy = async (id: string) => {
   if (error) throw error;
 };
 
-export const createEvent = async (event: Omit<PuppyEvent, "id" | "created_at">) => {
+export const createEvent = async (event: Omit<PuppyEvent, "id">) => {
   const { data, error } = await supabase
     .from('events')
     .insert([event])
