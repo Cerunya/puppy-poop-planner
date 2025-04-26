@@ -129,7 +129,7 @@ const StatisticsPage: React.FC = () => {
   
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto pl-4 md:pl-8">
         <StatisticsHeader 
           selectedPuppyId={selectedPuppyId} 
           setSelectedPuppyId={setSelectedPuppyId} 

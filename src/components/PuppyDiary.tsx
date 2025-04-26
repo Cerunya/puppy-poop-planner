@@ -1,7 +1,7 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { Image } from "lucide-react";
+import { Image, Trash2 } from "lucide-react";
 import { usePuppy } from "@/context/PuppyContext";
 import {
   Sheet,
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface PuppyDiaryProps {
   puppyId: string | null;
@@ -27,7 +28,7 @@ interface PuppyDiaryProps {
 }
 
 const PuppyDiary: React.FC<PuppyDiaryProps> = ({ puppyId, isOpen, onClose }) => {
-  const { events, puppies } = usePuppy();
+  const { events, puppies, removeEvent } = usePuppy();
   
   const puppy = puppies.find(p => p.id === puppyId);
   const puppyEvents = events
@@ -49,6 +50,10 @@ const PuppyDiary: React.FC<PuppyDiaryProps> = ({ puppyId, isOpen, onClose }) => 
     window.open(imageUrl, '_blank');
   };
 
+  const handleDeleteEvent = async (eventId: string) => {
+    await removeEvent(eventId);
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-[95%] sm:w-[600px] md:w-[700px] lg:max-w-[800px] overflow-y-auto">
@@ -66,6 +71,7 @@ const PuppyDiary: React.FC<PuppyDiaryProps> = ({ puppyId, isOpen, onClose }) => 
                   <TableHead className="whitespace-nowrap">Art</TableHead>
                   <TableHead className="whitespace-nowrap">Foto</TableHead>
                   <TableHead className="whitespace-nowrap">Notizen</TableHead>
+                  <TableHead className="whitespace-nowrap">Aktionen</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -95,6 +101,32 @@ const PuppyDiary: React.FC<PuppyDiaryProps> = ({ puppyId, isOpen, onClose }) => 
                     </TableCell>
                     <TableCell className="max-w-[200px] break-words">
                       {event.notes || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="icon" className="h-8 w-8">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Ereignis löschen</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Sind Sie sicher, dass Sie dieses Ereignis löschen möchten?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDeleteEvent(event.id)}
+                              className="bg-red-500 hover:bg-red-600"
+                            >
+                              Löschen
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -2,11 +2,12 @@
 import React, { useState } from "react";
 import { usePuppy } from "@/context/PuppyContext";
 import { Button } from "@/components/ui/button";
-import { Image, Plus } from "lucide-react";
+import { Image, Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EventType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadImageToStorage } from "@/services/puppyService";
 
 interface EventFormProps {
   puppyId: string;
@@ -32,33 +33,12 @@ export const EventForm = ({ puppyId, type, onSuccess }: EventFormProps) => {
     }
   };
 
-  const uploadImage = async (file: File): Promise<string | null> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
-
-    const { error: uploadError, data } = await supabase.storage
-      .from('puppy-events')
-      .upload(filePath, file);
-
-    if (uploadError) {
-      console.error('Error uploading file:', uploadError);
-      return null;
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('puppy-events')
-      .getPublicUrl(filePath);
-
-    return publicUrl;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     let imageUrl = null;
     if (image) {
-      imageUrl = await uploadImage(image);
+      imageUrl = await uploadImageToStorage(image);
     }
 
     // Create event with custom time
@@ -84,6 +64,11 @@ export const EventForm = ({ puppyId, type, onSuccess }: EventFormProps) => {
     setImage(null);
     setImagePreview(null);
     onSuccess?.();
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    setImagePreview(null);
   };
 
   return (
@@ -129,7 +114,7 @@ export const EventForm = ({ puppyId, type, onSuccess }: EventFormProps) => {
         </div>
         
         {imagePreview && (
-          <div className="mt-2">
+          <div className="mt-2 flex items-center space-x-2">
             <img
               src={imagePreview}
               alt="Preview"
@@ -137,14 +122,11 @@ export const EventForm = ({ puppyId, type, onSuccess }: EventFormProps) => {
             />
             <Button
               type="button"
-              variant="ghost"
+              variant="destructive"
               size="sm"
-              className="mt-2 text-red-500"
-              onClick={() => {
-                setImage(null);
-                setImagePreview(null);
-              }}
+              onClick={handleRemoveImage}
             >
+              <Trash2 className="w-4 h-4 mr-2" />
               Entfernen
             </Button>
           </div>

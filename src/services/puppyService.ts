@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Puppy, PuppyEvent, EventType } from "@/types";
 
@@ -74,7 +73,7 @@ export const uploadImageToStorage = async (file: File): Promise<string | null> =
 
     // Upload to storage
     const { error: uploadError } = await supabase.storage
-      .from('puppy-events')
+      .from('puppy-images')
       .upload(filePath, file);
 
     if (uploadError) {
@@ -84,7 +83,7 @@ export const uploadImageToStorage = async (file: File): Promise<string | null> =
 
     // Get the public URL
     const { data: { publicUrl } } = supabase.storage
-      .from('puppy-events')
+      .from('puppy-images')
       .getPublicUrl(filePath);
 
     return publicUrl;
@@ -112,4 +111,27 @@ export const deleteEvent = async (id: string) => {
     .eq('id', id);
 
   if (error) throw error;
+};
+
+export const deleteImageFromStorage = async (imageUrl: string): Promise<boolean> => {
+  try {
+    // Extract the file path from the public URL
+    const url = new URL(imageUrl);
+    const filePath = url.pathname.split('/').slice(3).join('/');
+
+    // Delete the file from storage
+    const { error } = await supabase.storage
+      .from('puppy-images')
+      .remove([filePath]);
+
+    if (error) {
+      console.error('Error deleting file:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in deleteImageFromStorage:', error);
+    return false;
+  }
 };
