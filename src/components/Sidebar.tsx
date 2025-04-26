@@ -10,6 +10,7 @@ import EditPuppyDialog from "./EditPuppyDialog";
 import { Button } from "./ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
@@ -83,20 +84,19 @@ const Sidebar: React.FC = () => {
                     onClick={() => setSelectedPuppyId(puppy.id)}
                     className="flex items-center space-x-2 flex-1 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded"
                   >
-                    <div className="w-8 h-8 bg-puppy-purple rounded-full flex items-center justify-center text-white">
+                    <Avatar className="w-8 h-8">
                       {puppy.image_url ? (
-                        <img
-                          src={puppy.image_url}
-                          alt={puppy.name}
-                          className="w-full h-full rounded-full object-cover"
-                        />
+                        <AvatarImage src={puppy.image_url} alt={puppy.name} />
                       ) : (
-                        puppy.name[0]
+                        <AvatarFallback>{puppy.name[0]}</AvatarFallback>
                       )}
-                    </div>
+                    </Avatar>
                     <span>{puppy.name}</span>
                   </button>
-                  <EditPuppyDialog puppy={puppy} />
+                  <EditPuppyDialog 
+                    puppy={puppy}
+                    trigger={<Button variant="ghost" size="sm">Bearbeiten</Button>}
+                  />
                 </li>
               ))}
               <li>

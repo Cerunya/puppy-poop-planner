@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Puppy, PuppyEvent, EventType } from "@/types";
 
@@ -66,15 +67,20 @@ export const deletePuppy = async (id: string) => {
 
 export const uploadImageToStorage = async (file: File): Promise<string | null> => {
   try {
-    // Create a unique filename
+    if (!file) return null;
+    
+    // Create a unique filename with timestamp to avoid collisions
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
     const filePath = `${fileName}`;
 
     // Upload to storage
     const { error: uploadError } = await supabase.storage
       .from('puppy-images')
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
 
     if (uploadError) {
       console.error('Error uploading file:', uploadError);
@@ -115,14 +121,16 @@ export const deleteEvent = async (id: string) => {
 
 export const deleteImageFromStorage = async (imageUrl: string): Promise<boolean> => {
   try {
-    // Extract the file path from the public URL
-    const url = new URL(imageUrl);
-    const filePath = url.pathname.split('/').slice(3).join('/');
-
+    if (!imageUrl) return true;
+    
+    // Extract the file name from the public URL
+    const parts = imageUrl.split('/');
+    const fileName = parts[parts.length - 1];
+    
     // Delete the file from storage
     const { error } = await supabase.storage
       .from('puppy-images')
-      .remove([filePath]);
+      .remove([fileName]);
 
     if (error) {
       console.error('Error deleting file:', error);

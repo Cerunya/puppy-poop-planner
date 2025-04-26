@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { usePuppy } from "@/context/PuppyContext";
-import { Image } from "lucide-react";
+import { Image as ImageIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Puppy } from "@/types";
+import { uploadImageToStorage, deleteImageFromStorage } from "@/services/puppyService";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface EditPuppyDialogProps {
   puppy: Puppy;
@@ -26,6 +28,7 @@ const EditPuppyDialog = ({ puppy, trigger }: EditPuppyDialogProps) => {
   const [birthdate, setBirthdate] = useState(puppy.birthdate);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(puppy.image_url || null);
+  const [isUploading, setIsUploading] = useState(false);
   const [open, setOpen] = useState(false);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,24 +39,38 @@ const EditPuppyDialog = ({ puppy, trigger }: EditPuppyDialogProps) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsUploading(true);
     
-    let imageUrl = puppy.image_url;
-    if (image) {
-      // In a real app, you would upload the image to a server here
-      // and get back a URL. For now, we'll use the object URL
-      imageUrl = URL.createObjectURL(image);
+    try {
+      let imageUrl = puppy.image_url;
+      
+      // If there's a new image, upload it and delete the old one
+      if (image) {
+        if (puppy.image_url) {
+          // Delete the old image first
+          await deleteImageFromStorage(puppy.image_url);
+        }
+        
+        // Upload the new image and get the URL
+        imageUrl = await uploadImageToStorage(image);
+      }
+      
+      // Update the puppy with the new data
+      await updatePuppy(puppy.id, {
+        name,
+        breed,
+        birthdate,
+        image_url: imageUrl || undefined,
+      });
+      
+      setOpen(false);
+    } catch (error) {
+      console.error("Error updating puppy:", error);
+    } finally {
+      setIsUploading(false);
     }
-    
-    updatePuppy(puppy.id, {
-      name,
-      breed,
-      birthdate,
-      image_url: imageUrl,
-    });
-    
-    setOpen(false);
   };
 
   return (
@@ -66,6 +83,36 @@ const EditPuppyDialog = ({ puppy, trigger }: EditPuppyDialogProps) => {
           <DialogTitle>Welpen bearbeiten</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex items-center space-x-4 mb-4">
+            <Avatar className="w-16 h-16 border">
+              {imagePreview ? (
+                <AvatarImage src={imagePreview} alt={name} />
+              ) : (
+                <AvatarFallback>{name[0]}</AvatarFallback>
+              )}
+            </Avatar>
+            <div>
+              <Label htmlFor="puppy-image" className="mb-2 block">Foto</Label>
+              <div className="flex items-center space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById("puppy-image")?.click()}
+                >
+                  <ImageIcon className="w-4 h-4 mr-2" />
+                  Foto hochladen
+                </Button>
+                <Input
+                  id="puppy-image"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+              </div>
+            </div>
+          </div>
+          
           <div>
             <Label htmlFor="name">Name</Label>
             <Input
@@ -94,36 +141,10 @@ const EditPuppyDialog = ({ puppy, trigger }: EditPuppyDialogProps) => {
               required
             />
           </div>
-          <div>
-            <Label htmlFor="puppy-image">Foto</Label>
-            <div className="flex items-center space-x-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => document.getElementById("puppy-image")?.click()}
-              >
-                <Image className="w-4 h-4 mr-2" />
-                Foto hochladen
-              </Button>
-              <Input
-                id="puppy-image"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageChange}
-              />
-            </div>
-            {imagePreview && (
-              <div className="mt-2">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="max-w-[200px] rounded-md"
-                />
-              </div>
-            )}
-          </div>
-          <Button type="submit">Speichern</Button>
+          
+          <Button type="submit" disabled={isUploading}>
+            {isUploading ? "Wird gespeichert..." : "Speichern"}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>
