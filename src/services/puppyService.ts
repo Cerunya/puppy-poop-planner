@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Puppy, PuppyEvent, EventType } from "@/types";
 
@@ -62,6 +63,35 @@ export const deletePuppy = async (id: string) => {
     .eq('id', id);
 
   if (error) throw error;
+};
+
+export const uploadImageToStorage = async (file: File): Promise<string | null> => {
+  try {
+    // Create a unique filename
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    // Upload to storage
+    const { error: uploadError } = await supabase.storage
+      .from('puppy-events')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error('Error uploading file:', uploadError);
+      return null;
+    }
+
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('puppy-events')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  } catch (error) {
+    console.error('Error in uploadImageToStorage:', error);
+    return null;
+  }
 };
 
 export const createEvent = async (event: Omit<PuppyEvent, "id">) => {

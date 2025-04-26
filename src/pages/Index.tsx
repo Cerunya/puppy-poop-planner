@@ -17,7 +17,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { EventType } from "@/types";
-import { Calendar as CalendarIcon, CalendarPlus, CalendarMinus, Image } from "lucide-react";
+import { Calendar as CalendarIcon, CalendarPlus, CalendarMinus, Image, Clock } from "lucide-react";
+import * as puppyService from "@/services/puppyService";
 
 const Index = () => {
   const { puppies, events, addEvent, selectedPuppyId, setSelectedPuppyId } = usePuppy();
@@ -27,16 +28,24 @@ const Index = () => {
   const [poopDescription, setPoopDescription] = useState<string>("");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string>(() => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  });
 
-  const handleQuickAdd = (type: EventType) => {
+  const handleQuickAdd = async (type: EventType) => {
     if (!selectedPuppyId) {
       return;
     }
     
-    addEvent({
+    // Create event with current time
+    const now = new Date();
+    const eventTime = now.toISOString();
+    
+    await addEvent({
       puppy_id: selectedPuppyId,
       type,
-      created_at: new Date().toISOString(),
+      created_at: eventTime,
     });
   };
 
@@ -48,15 +57,15 @@ const Index = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedPuppyId) return;
     
-    // Create a new event
+    // Handle image upload
     let imageUrl: string | undefined = undefined;
-    if (imagePreview) {
-      imageUrl = imagePreview;
+    if (image) {
+      imageUrl = await puppyService.uploadImageToStorage(image);
     }
 
     // Combine notes and poop description if available
@@ -65,12 +74,23 @@ const Index = () => {
       combinedNotes = `${poopDescription}${notes ? ': ' + notes : ''}`;
     }
     
-    addEvent({
+    // Create event with custom time
+    const now = new Date();
+    const [hours, minutes] = selectedTime.split(':').map(Number);
+    const eventTime = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      hours,
+      minutes
+    );
+    
+    await addEvent({
       puppy_id: selectedPuppyId,
       type: eventType,
       notes: combinedNotes.trim() || undefined,
       image_url: imageUrl,
-      created_at: new Date().toISOString(),
+      created_at: eventTime.toISOString(),
     });
     
     // Reset form
@@ -220,6 +240,19 @@ const Index = () => {
                     <SelectItem value="both">Beides</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="time">Uhrzeit</Label>
+                <div className="flex items-center">
+                  <Clock className="mr-2 h-4 w-4 text-gray-500" />
+                  <Input
+                    id="time"
+                    type="time"
+                    value={selectedTime}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                  />
+                </div>
               </div>
 
               {(eventType === "poop" || eventType === "both") && (
