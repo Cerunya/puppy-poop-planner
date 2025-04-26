@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,19 +8,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
     
     if (password !== confirmPassword) {
+      setErrorMessage("Die Passwörter stimmen nicht überein");
       toast({
         title: "Fehler",
         description: "Die Passwörter stimmen nicht überein",
@@ -31,13 +37,24 @@ const Register = () => {
     setIsLoading(true);
     
     try {
+      console.log("Attempting registration with:", { email });
+      
       // Sign up user
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: window.location.origin
+        }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Registration error:", error);
+        setErrorMessage(error.message);
+        throw error;
+      }
+      
+      console.log("Registration successful:", data);
       
       // If we have a session after signup, automatically log the user in
       if (data.session) {
@@ -58,6 +75,7 @@ const Register = () => {
         navigate("/login");
       }
     } catch (error) {
+      console.error("Registration error:", error);
       toast({
         title: "Registrierung fehlgeschlagen",
         description: error instanceof Error ? error.message : "Bitte versuchen Sie es erneut.",
@@ -87,6 +105,13 @@ const Register = () => {
             </p>
           </CardHeader>
           <CardContent>
+            {errorMessage && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">E-Mail</Label>
