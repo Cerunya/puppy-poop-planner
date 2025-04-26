@@ -1,15 +1,21 @@
-
-import React from "react";
-import { Link, Navigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePuppy } from "@/context/PuppyContext";
 
 const Landing = () => {
-  const { session } = usePuppy();
+  const { session, loading } = usePuppy();
+  const navigate = useNavigate();
 
-  if (session) {
-    return <Navigate to="/dashboard" replace />;
+  useEffect(() => {
+    if (session && !loading) {
+      navigate("/dashboard");
+    }
+  }, [session, loading, navigate]);
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Laden...</div>;
   }
 
   return (
@@ -23,14 +29,25 @@ const Landing = () => {
         </div>
         <div className="flex items-center space-x-4">
           <ThemeToggle />
-          <Link to="/login">
-            <Button variant="outline" size="sm">Login</Button>
-          </Link>
-          <Link to="/register">
-            <Button size="sm" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-              Kostenlos starten
-            </Button>
-          </Link>
+          {!session && (
+            <>
+              <Link to="/login">
+                <Button variant="outline" size="sm">Login</Button>
+              </Link>
+              <Link to="/register">
+                <Button size="sm" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                  Kostenlos starten
+                </Button>
+              </Link>
+            </>
+          )}
+          {session && (
+            <Link to="/dashboard">
+              <Button size="sm" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                Zum Dashboard
+              </Button>
+            </Link>
+          )}
         </div>
       </header>
       

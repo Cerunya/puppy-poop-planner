@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { usePuppy } from "@/context/PuppyContext";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -16,6 +17,14 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { session } = usePuppy();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (session) {
+      navigate("/dashboard");
+    }
+  }, [session, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,27 +41,30 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // Step 1: Sign up user
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
 
-      if (data.user) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (signInError) throw signInError;
-
-        toast({
-          title: "Registrierung erfolgreich",
-          description: "Willkommen bei Puppy Tracker!",
-        });
-        
+      // Successfully registered
+      toast({
+        title: "Registrierung erfolgreich",
+        description: "Willkommen bei Puppy Tracker!",
+      });
+      
+      // If auto-confirm is enabled, the user should be logged in now
+      // We'll check if we have a session after signup
+      if (signUpData.session) {
         navigate("/dashboard");
+      } else {
+        // If email confirmation is required, inform the user
+        toast({
+          title: "Bestätigungsmail gesendet",
+          description: "Bitte bestätige deine E-Mail-Adresse, um fortzufahren.",
+        });
       }
     } catch (error) {
       toast({

@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { usePuppyState } from "@/hooks/usePuppyState";
 import * as puppyService from "@/services/puppyService";
-import { Session } from '@supabase/supabase-js'; // Added this import for Session type
+import { Session } from '@supabase/supabase-js';
 
 interface PuppyContextType {
   puppies: Puppy[];
@@ -18,12 +18,13 @@ interface PuppyContextType {
   selectedPuppyId: string | null;
   setSelectedPuppyId: (id: string | null) => void;
   session: Session | null;
+  loading: boolean;
 }
 
 const PuppyContext = createContext<PuppyContextType | undefined>(undefined);
 
 export const PuppyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
   const { toast } = useToast();
   const {
     puppies,
@@ -158,6 +159,7 @@ export const PuppyProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         selectedPuppyId,
         setSelectedPuppyId,
         session,
+        loading,
       }}
     >
       {children}

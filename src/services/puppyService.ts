@@ -26,7 +26,10 @@ export const fetchEvents = async () => {
 };
 
 export const createPuppy = async (puppy: Omit<Puppy, "id" | "user_id" | "created_at" | "updated_at">) => {
-  const { data: sessionData } = await supabase.auth.getSession();
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  
+  if (sessionError) throw sessionError;
+  
   const userId = sessionData.session?.user?.id;
   
   if (!userId) throw new Error("Not authenticated");
