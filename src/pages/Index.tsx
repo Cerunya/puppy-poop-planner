@@ -19,6 +19,8 @@ import { EventType } from "@/types";
 import { Calendar as CalendarIcon, CalendarPlus, CalendarMinus, Image, Clock } from "lucide-react";
 import * as puppyService from "@/services/puppyService";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
 
 const Index = () => {
   const { puppies, events, addEvent, selectedPuppyId, setSelectedPuppyId } = usePuppy();
