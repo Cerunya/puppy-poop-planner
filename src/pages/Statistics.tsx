@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from "react";
 import { format, parseISO, startOfDay, subDays } from "date-fns";
 import { usePuppy } from "@/context/PuppyContext";
@@ -8,6 +7,7 @@ import { TimeframeSelector } from "@/components/statistics/TimeframeSelector";
 import { AveragesCard } from "@/components/statistics/AveragesCard";
 import { StatisticsHeader } from "@/components/statistics/StatisticsHeader";
 import { EventsSection } from "@/components/statistics/EventsSection";
+import { CircularHourlyPattern } from "@/components/statistics/CircularHourlyPattern";
 
 type TimeframeOption = "7days" | "30days" | "90days" | "custom";
 
@@ -127,6 +127,31 @@ const StatisticsPage: React.FC = () => {
     return distribution;
   }, [filteredEvents]);
   
+  const hourlyDistribution = useMemo(() => {
+    const hours = Array.from({ length: 24 }, (_, i) => {
+      const hour = i.toString().padStart(2, '0');
+      return {
+        hour: `${hour}:00`,
+        pee: 0,
+        poop: 0
+      };
+    });
+
+    filteredEvents.forEach(event => {
+      const date = new Date(event.created_at);
+      const hour = date.getHours();
+      
+      if (event.type === "pee" || event.type === "both") {
+        hours[hour].pee += 1;
+      }
+      if (event.type === "poop" || event.type === "both") {
+        hours[hour].poop += 1;
+      }
+    });
+
+    return hours;
+  }, [filteredEvents]);
+
   return (
     <Layout>
       <div className="max-w-4xl mx-auto pl-4 md:pl-8">
@@ -150,6 +175,13 @@ const StatisticsPage: React.FC = () => {
             poopPerDay={averages.poopPerDay} 
           />
         </div>
+
+        <Card className="mb-6">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Circular Hourly Pattern</h3>
+            <CircularHourlyPattern data={hourlyDistribution} />
+          </div>
+        </Card>
         
         <EventsSection 
           eventsByDay={eventsByDay} 
