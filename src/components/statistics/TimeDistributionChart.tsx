@@ -37,7 +37,7 @@ export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
           <XAxis 
             dataKey="name"
             stroke="var(--foreground)"
-            tick={{ fill: "var(--foreground)", fontSize: 11 }}
+            tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
             interval={0}
             angle={-45}
             textAnchor="end"
@@ -45,7 +45,7 @@ export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
           />
           <YAxis 
             stroke="var(--foreground)"
-            tick={{ fill: "var(--foreground)" }}
+            tick={{ fill: "var(--muted-foreground)" }}
           />
           <Tooltip content={<DistributionTooltip />} />
           <Legend content={<DistributionLegend />} />

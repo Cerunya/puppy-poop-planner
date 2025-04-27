@@ -34,7 +34,7 @@ export const CircularHourlyPattern = ({ data }: CircularHourlyPatternProps) => {
           <PolarAngleAxis
             dataKey="name"
             tick={{ 
-              fill: "#9F9EA1",
+              fill: "var(--muted-foreground)",
               fontSize: 12
             }}
             stroke="var(--muted-foreground)"
