@@ -131,7 +131,7 @@ const StatisticsPage: React.FC = () => {
     const hours = Array.from({ length: 24 }, (_, i) => {
       const hourNumber = i + 1;
       return {
-        name: `${hourNumber}`,
+        name: hourNumber.toString(),
         pee: 0,
         poop: 0
       };

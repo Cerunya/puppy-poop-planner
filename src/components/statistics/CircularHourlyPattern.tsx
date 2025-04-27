@@ -34,7 +34,7 @@ export const CircularHourlyPattern = ({ data }: CircularHourlyPatternProps) => {
           <PolarAngleAxis
             dataKey="name"
             tick={{ 
-              fill: "var(--muted-foreground)",
+              fill: "#C8C8C9",
               fontSize: 12
             }}
             stroke="var(--muted-foreground)"
@@ -44,7 +44,7 @@ export const CircularHourlyPattern = ({ data }: CircularHourlyPatternProps) => {
             align="center"
             verticalAlign="top"
             formatter={(value) => (
-              <span style={{ color: 'var(--foreground)' }}>
+              <span style={{ color: '#C8C8C9' }}>
                 {value === "pee" ? "Pee Pattern" : "Poo Pattern"}
               </span>
             )}
