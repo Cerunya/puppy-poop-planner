@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -19,6 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EventType } from "@/types";
 import { Calendar as CalendarIcon, CalendarPlus, CalendarMinus, Image, Clock } from "lucide-react";
 import * as puppyService from "@/services/puppyService";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const Index = () => {
   const { puppies, events, addEvent, selectedPuppyId, setSelectedPuppyId } = usePuppy();
@@ -32,13 +32,13 @@ const Index = () => {
     const now = new Date();
     return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   });
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const handleQuickAdd = async (type: EventType) => {
     if (!selectedPuppyId) {
       return;
     }
     
-    // Create event with current time
     const now = new Date();
     const eventTime = now.toISOString();
     
@@ -62,28 +62,19 @@ const Index = () => {
     
     if (!selectedPuppyId) return;
     
-    // Handle image upload
     let imageUrl: string | undefined = undefined;
     if (image) {
       imageUrl = await puppyService.uploadImageToStorage(image);
     }
 
-    // Combine notes and poop description if available
     let combinedNotes = notes;
     if (poopDescription && (eventType === "poop" || eventType === "both")) {
       combinedNotes = `${poopDescription}${notes ? ': ' + notes : ''}`;
     }
     
-    // Create event with custom time
-    const now = new Date();
     const [hours, minutes] = selectedTime.split(':').map(Number);
-    const eventTime = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      hours,
-      minutes
-    );
+    const eventTime = new Date(selectedDate);
+    eventTime.setHours(hours, minutes);
     
     await addEvent({
       puppy_id: selectedPuppyId,
@@ -93,14 +84,12 @@ const Index = () => {
       created_at: eventTime.toISOString(),
     });
     
-    // Reset form
     setNotes("");
     setPoopDescription("");
     setImage(null);
     setImagePreview(null);
   };
 
-  // Get today's events for the selected puppy
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   
@@ -135,7 +124,6 @@ const Index = () => {
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Neuer Eintrag</h1>
         
-        {/* Quick Action Buttons */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           <Card className="bg-puppy-blue border-0">
             <CardContent className="p-6 flex flex-col items-center justify-center">
@@ -180,7 +168,6 @@ const Index = () => {
           </Card>
         </div>
         
-        {/* Today's Summary */}
         <Card className="mb-8">
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold mb-3">Heute</h2>
@@ -200,7 +187,6 @@ const Index = () => {
           </CardContent>
         </Card>
         
-        {/* Add Event Form */}
         <Card>
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold mb-4">Detaillierter Eintrag</h2>
@@ -243,15 +229,46 @@ const Index = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="time">Uhrzeit</Label>
-                <div className="flex items-center">
-                  <Clock className="mr-2 h-4 w-4 text-gray-500" />
-                  <Input
-                    id="time"
-                    type="time"
-                    value={selectedTime}
-                    onChange={(e) => setSelectedTime(e.target.value)}
-                  />
+                <Label>Datum & Zeit</Label>
+                <div className="flex flex-wrap gap-4">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-[200px] justify-start text-left font-normal",
+                          !selectedDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedDate ? (
+                          format(selectedDate, "dd.MM.yyyy", { locale: de })
+                        ) : (
+                          <span>Datum wählen</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date) => setSelectedDate(date || new Date())}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  <div className="flex items-center">
+                    <Clock className="mr-2 h-4 w-4 text-gray-500" />
+                    <Input
+                      id="time"
+                      type="time"
+                      value={selectedTime}
+                      onChange={(e) => setSelectedTime(e.target.value)}
+                      className="w-[150px]"
+                    />
+                  </div>
                 </div>
               </div>
 
