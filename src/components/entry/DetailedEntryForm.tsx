@@ -24,13 +24,15 @@ interface DetailedEntryFormProps {
     created_at: string;
   }) => Promise<void>;
   onImageUpload: (file: File) => Promise<string>;
+  setSelectedPuppyId?: (id: string | null) => void;
 }
 
 export const DetailedEntryForm = ({ 
   selectedPuppyId,
   puppies,
   onSubmit,
-  onImageUpload
+  onImageUpload,
+  setSelectedPuppyId
 }: DetailedEntryFormProps) => {
   const [eventType, setEventType] = useState<"pee" | "poop" | "both">("pee");
   const [notes, setNotes] = useState("");
@@ -103,7 +105,7 @@ export const DetailedEntryForm = ({
             <Label htmlFor="puppy">Welpe</Label>
             <Select
               value={selectedPuppyId || ""}
-              onValueChange={(value) => setSelectedPuppyId(value)}
+              onValueChange={(value) => setSelectedPuppyId && setSelectedPuppyId(value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Welpen auswählen" />

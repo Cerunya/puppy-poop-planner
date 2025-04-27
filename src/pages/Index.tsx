@@ -57,6 +57,7 @@ const Index = () => {
           puppies={puppies}
           onSubmit={addEvent}
           onImageUpload={puppyService.uploadImageToStorage}
+          setSelectedPuppyId={setSelectedPuppyId}
         />
       </div>
     </Layout>
