@@ -27,14 +27,14 @@ export const CircularHourlyPattern = ({ data }: CircularHourlyPatternProps) => {
           margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
         >
           <PolarGrid 
-            gridType="polygon"
+            gridType="circle"
             stroke="var(--muted-foreground)"
             strokeOpacity={0.2}
           />
           <PolarAngleAxis
             dataKey="hour"
             tick={{ 
-              fill: "var(--foreground)",
+              fill: "#9F9EA1",
               fontSize: 12
             }}
             stroke="var(--muted-foreground)"
@@ -56,6 +56,7 @@ export const CircularHourlyPattern = ({ data }: CircularHourlyPatternProps) => {
             stroke="#7DD3FC"
             fill="#7DD3FC"
             fillOpacity={0.3}
+            connectNulls={true}
           />
           <Radar
             name="poop"
@@ -63,6 +64,7 @@ export const CircularHourlyPattern = ({ data }: CircularHourlyPatternProps) => {
             stroke="#FDA4AF"
             fill="#FDA4AF"
             fillOpacity={0.3}
+            connectNulls={true}
           />
         </RadarChart>
       </ResponsiveContainer>

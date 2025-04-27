@@ -38,6 +38,10 @@ export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
             dataKey="name"
             stroke="var(--foreground)"
             tick={{ fill: "var(--foreground)" }}
+            interval={0}
+            angle={-45}
+            textAnchor="end"
+            height={60}
           />
           <YAxis 
             stroke="var(--foreground)"
@@ -52,6 +56,7 @@ export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
             stroke="#7DD3FC"
             strokeWidth={2}
             dot={false}
+            connectNulls={true}
           />
           <Line
             type="monotone"
@@ -60,6 +65,7 @@ export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
             stroke="#FDA4AF"
             strokeWidth={2}
             dot={false}
+            connectNulls={true}
           />
         </LineChart>
       </ResponsiveContainer>
