@@ -11,7 +11,7 @@ import {
 
 interface CircularHourlyPatternProps {
   data: Array<{
-    hour: string;
+    name: string;
     pee: number;
     poop: number;
   }>;
@@ -32,7 +32,7 @@ export const CircularHourlyPattern = ({ data }: CircularHourlyPatternProps) => {
             strokeOpacity={0.2}
           />
           <PolarAngleAxis
-            dataKey="hour"
+            dataKey="name"
             tick={{ 
               fill: "#9F9EA1",
               fontSize: 12
