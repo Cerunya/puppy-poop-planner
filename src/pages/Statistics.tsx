@@ -129,9 +129,8 @@ const StatisticsPage: React.FC = () => {
   
   const hourlyDistribution = useMemo(() => {
     const hours = Array.from({ length: 24 }, (_, i) => {
-      const hourNumber = i + 1;
       return {
-        name: hourNumber.toString(),
+        name: i.toString().padStart(2, '0'),
         pee: 0,
         poop: 0
       };

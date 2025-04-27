@@ -9,9 +9,9 @@ interface TimeDistributionCardProps {
 
 export const TimeDistributionCard = ({ data }: TimeDistributionCardProps) => {
   return (
-    <Card>
+    <Card className="bg-[#1A1F2C] border-gray-800">
       <CardHeader className="pb-2">
-        <CardTitle>Verteilung nach Tageszeit</CardTitle>
+        <CardTitle className="text-gray-200">Verteilung nach Tageszeit</CardTitle>
       </CardHeader>
       <CardContent>
         <TimeDistributionChart data={data} />

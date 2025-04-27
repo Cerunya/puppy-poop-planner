@@ -28,24 +28,31 @@ export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
         Hourly Distribution with Trends
       </h3>
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
+        <LineChart 
+          data={data}
+          margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+        >
           <CartesianGrid 
             strokeDasharray="3 3" 
-            stroke="var(--muted-foreground)"
-            strokeOpacity={0.2}
+            stroke="#333333"
+            horizontal={true}
+            vertical={true}
           />
           <XAxis 
             dataKey="name"
-            stroke="var(--foreground)"
-            tick={{ fill: "#C8C8C9", fontSize: 11 }}
+            stroke="#888888"
+            tick={{ fill: "#888888", fontSize: 11 }}
             interval={0}
             angle={-45}
             textAnchor="end"
             height={60}
+            tickFormatter={(value) => `${value}:00`}
           />
           <YAxis 
-            stroke="var(--foreground)"
-            tick={{ fill: "#C8C8C9" }}
+            stroke="#888888"
+            tick={{ fill: "#888888" }}
+            tickLine={{ stroke: "#888888" }}
+            axisLine={{ stroke: "#888888" }}
           />
           <Tooltip content={<DistributionTooltip />} />
           <Legend content={<DistributionLegend />} />
