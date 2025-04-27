@@ -2,12 +2,13 @@
 import React from 'react';
 import {
   ResponsiveContainer,
-  AreaChart,
+  LineChart,
   XAxis,
   YAxis,
   Tooltip,
   Legend,
-  Area
+  Line,
+  CartesianGrid
 } from 'recharts';
 import { DistributionTooltip } from './charts/DistributionTooltip';
 import { DistributionLegend } from './charts/DistributionLegend';
@@ -24,17 +25,12 @@ export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
   return (
     <div className="h-72">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data}>
-          <defs>
-            <linearGradient id="peeGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#7DD3FC" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#7DD3FC" stopOpacity={0}/>
-            </linearGradient>
-            <linearGradient id="poopGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#FDA4AF" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#FDA4AF" stopOpacity={0}/>
-            </linearGradient>
-          </defs>
+        <LineChart data={data}>
+          <CartesianGrid 
+            strokeDasharray="3 3" 
+            stroke="var(--muted-foreground)"
+            strokeOpacity={0.2}
+          />
           <XAxis 
             dataKey="name"
             stroke="var(--foreground)"
@@ -46,23 +42,23 @@ export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
           />
           <Tooltip content={<DistributionTooltip />} />
           <Legend content={<DistributionLegend />} />
-          <Area
+          <Line
             type="monotone"
             dataKey="pee"
             name="Urin"
             stroke="#7DD3FC"
-            fillOpacity={1}
-            fill="url(#peeGradient)"
+            strokeWidth={2}
+            dot={false}
           />
-          <Area
+          <Line
             type="monotone"
             dataKey="poop"
             name="Kot"
             stroke="#FDA4AF"
-            fillOpacity={1}
-            fill="url(#poopGradient)"
+            strokeWidth={2}
+            dot={false}
           />
-        </AreaChart>
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );

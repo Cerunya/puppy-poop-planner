@@ -22,7 +22,10 @@ export const CircularHourlyPattern = ({ data }: CircularHourlyPatternProps) => {
   return (
     <div className="h-[500px] w-full p-4">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={data}>
+        <RadarChart 
+          data={data}
+          margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
+        >
           <PolarGrid 
             gridType="circle" 
             stroke="var(--muted-foreground)"
@@ -46,6 +49,8 @@ export const CircularHourlyPattern = ({ data }: CircularHourlyPatternProps) => {
             }}
           />
           <Legend 
+            align="center"
+            verticalAlign="top"
             formatter={(value) => (
               <span style={{ color: 'var(--foreground)' }}>{value}</span>
             )}
