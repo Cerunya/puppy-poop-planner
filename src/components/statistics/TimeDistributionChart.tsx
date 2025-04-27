@@ -24,6 +24,9 @@ interface TimeDistributionChartProps {
 export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
   return (
     <div className="h-72">
+      <h3 className="text-lg font-semibold mb-4 text-center text-foreground">
+        Hourly Distribution with Trends
+      </h3>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <CartesianGrid 
@@ -45,7 +48,7 @@ export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
           <Line
             type="monotone"
             dataKey="pee"
-            name="Urin"
+            name="Pee Events"
             stroke="#7DD3FC"
             strokeWidth={2}
             dot={false}
@@ -53,7 +56,7 @@ export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
           <Line
             type="monotone"
             dataKey="poop"
-            name="Kot"
+            name="Poo Events"
             stroke="#FDA4AF"
             strokeWidth={2}
             dot={false}
