@@ -25,16 +25,17 @@ export const CircularHourlyPattern = ({ data }: CircularHourlyPatternProps) => {
         <RadarChart data={data}>
           <PolarGrid 
             gridType="circle" 
-            stroke="var(--foreground)"
+            stroke="var(--muted-foreground)"
             strokeOpacity={0.2}
           />
           <PolarAngleAxis
             dataKey="hour"
             tick={{ 
-              fill: 'var(--foreground)',
-              fontSize: 12,
-              opacity: 0.8
+              fill: "var(--foreground)",
+              fontSize: 12
             }}
+            stroke="var(--muted-foreground)"
+            tickLine={{ stroke: "var(--muted-foreground)" }}
           />
           <Tooltip 
             contentStyle={{
@@ -45,21 +46,23 @@ export const CircularHourlyPattern = ({ data }: CircularHourlyPatternProps) => {
             }}
           />
           <Legend 
-            formatter={(value) => <span style={{ color: 'var(--foreground)' }}>{value}</span>}
+            formatter={(value) => (
+              <span style={{ color: 'var(--foreground)' }}>{value}</span>
+            )}
           />
           <Radar
-            name="Urin"
+            name="Pee Pattern"
             dataKey="pee"
             stroke="#7DD3FC"
             fill="#7DD3FC"
-            fillOpacity={0.6}
+            fillOpacity={0.3}
           />
           <Radar
-            name="Kot"
+            name="Poo Pattern"
             dataKey="poop"
             stroke="#FDA4AF"
             fill="#FDA4AF"
-            fillOpacity={0.6}
+            fillOpacity={0.3}
           />
         </RadarChart>
       </ResponsiveContainer>

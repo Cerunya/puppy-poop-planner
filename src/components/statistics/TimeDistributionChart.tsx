@@ -1,4 +1,5 @@
 
+import React from 'react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -7,7 +8,9 @@ import {
   Tooltip,
   Legend,
   Area
-} from "recharts";
+} from 'recharts';
+import { DistributionTooltip } from './charts/DistributionTooltip';
+import { DistributionLegend } from './charts/DistributionLegend';
 
 interface TimeDistributionChartProps {
   data: Array<{
@@ -23,37 +26,41 @@ export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data}>
           <defs>
-            <linearGradient id="peeColor" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#D3E4FD" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#D3E4FD" stopOpacity={0}/>
+            <linearGradient id="peeGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#7DD3FC" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#7DD3FC" stopOpacity={0}/>
             </linearGradient>
-            <linearGradient id="poopColor" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#E6D7B9" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#E6D7B9" stopOpacity={0}/>
+            <linearGradient id="poopGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#FDA4AF" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#FDA4AF" stopOpacity={0}/>
             </linearGradient>
           </defs>
           <XAxis 
             dataKey="name"
-            stroke="var(--muted-foreground)"
+            stroke="var(--foreground)"
+            tick={{ fill: "var(--foreground)" }}
           />
-          <YAxis stroke="var(--muted-foreground)" />
-          <Tooltip />
-          <Legend />
+          <YAxis 
+            stroke="var(--foreground)"
+            tick={{ fill: "var(--foreground)" }}
+          />
+          <Tooltip content={<DistributionTooltip />} />
+          <Legend content={<DistributionLegend />} />
           <Area
             type="monotone"
             dataKey="pee"
             name="Urin"
-            stroke="#D3E4FD"
+            stroke="#7DD3FC"
             fillOpacity={1}
-            fill="url(#peeColor)"
+            fill="url(#peeGradient)"
           />
           <Area
             type="monotone"
             dataKey="poop"
             name="Kot"
-            stroke="#E6D7B9"
+            stroke="#FDA4AF"
             fillOpacity={1}
-            fill="url(#poopColor)"
+            fill="url(#poopGradient)"
           />
         </AreaChart>
       </ResponsiveContainer>
